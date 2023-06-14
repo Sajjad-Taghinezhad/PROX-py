@@ -345,7 +345,7 @@ while True:
                     buffer = b""
                 else: 
                     print(Fore.RED+"error detected in packet transferring. exit ")
-                    continue
+                    exit(1)
         except socket.timeout:
             #!! handle timeout of ack-data
 
