@@ -334,13 +334,20 @@ while True:
     ack_count = ack_count + 1 # count for ack sent packets
     total_sent = total + 1 # count for total sent packet
     time.sleep(delay) # set a delay for protect packet lost on wire
-    if ack_count == ackOffset:  # check for ack offset 
-        req_ack(dest_ip_address) # send packet with req-ack flag to get number of successful arrived packets from receiver
-        ack_data = pack
-        if ack_data.packet_type == 'ack-data': # listen for input packet and check for type of packet flag 
-            if struct.unpack("!Q",ack_data.prox.data)[0] == total: # compare number of sent packets and arrived 
-                # print("compare success")
-                buffer = b""
+    
+    if ack_count == ackOffset:
+        try:  # check for ack offset 
+            req_ack(dest_ip_address) # send packet with req-ack flag to get number of successful arrived packets from receiver
+            ack_data = pack()
+            if ack_data.packet_type == 'ack-data': # listen for input packet and check for type of packet flag 
+                if struct.unpack("!Q",ack_data.prox.data)[0] == total: # compare number of sent packets and arrived 
+                    # print("compare success")
+                    buffer = b""
+                else: 
+                    print(Fore.RED+"error detected in packet transferring. exit ")
+                    continue
+        except socket.timeout:
+            #!! handle timeout of ack-data
 
 
 
