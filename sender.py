@@ -347,13 +347,11 @@ while True:
                     print(Fore.RED+"error detected in packet transferring. exit ")
                     exit(1)
         except socket.timeout:
+            print("timeout for get ack-data. exit")
+            exit(1)
             #!! handle timeout of ack-data
 
 
-
-
-
-        
 
     # if g == ackOffset: 
     #     # print("{} / {}".format(g,ackOffset))
