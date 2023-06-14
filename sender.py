@@ -7,6 +7,7 @@ import os
 import math
 import time
 from colorama import Fore, Back, Style
+import sys
 
 # define socket for send and receive data
 sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
@@ -18,7 +19,7 @@ protocol_id = 234
 ip_address = "192.168.0.13"
 dest_ip_address = "192.168.0.17"
 ip_address = "172.16.0.1"
-dest_ip_address = "172.16.0.128"
+dest_ip_address = "172.16.0.129"
 # --------------------------------------------------------
 
 # define and calculate MTU, fragmentation, timeout, and max attempts(reconnecting)
@@ -131,7 +132,9 @@ def pack() :
         if IP_packet.destination_address != ip_address or IP_packet.protocol != 255:
             continue
         prox = PROX_parse(packet[20:])
-
+        if check_signature(packet):
+            print("fail signature")
+            exit(1)
         if prox.flag == 255 :
             packet_type = "start"
         elif prox.flag == 85 : 
@@ -237,8 +240,9 @@ def send_data(data: bytes,destination):
 
 # specific file to transfer
 #! implement dynamic specific : argument
-file_path = "sample2.data"
-fileName = "sample2.data"
+arguments = sys.argv
+file_path = arguments[1]
+fileName = arguments[1]
 fileSize = os.path.getsize(file_path) # get file size 
 
 # Calculate the number of expected packets
@@ -291,11 +295,11 @@ for attempt in range(max_attempts):
 # wait for accept packet  
 for attempt in range(max_attempts):
     try:
-        print("waiting for accept packet to start sending data")
+        # print("waiting for accept packet to start sending data")s
         sock.settimeout(timeout)
         packet = pack()
         if packet.packet_type == "accept" : 
-            print("accept received")
+            print(Fore.GREEN+"File transfer accepted"+Fore.RESET)
             break
         elif packet.packet_type == "end" :
             print("receiver does not accept file. sending ack and exit")
@@ -312,7 +316,7 @@ for attempt in range(max_attempts):
 file = open(file_path, 'rb')
 
 # specific and calculate sending rate
-sending_rate = 5000
+sending_rate = 1000
 delay = 1 / sending_rate
 
 # specific some variable for control sending
@@ -321,6 +325,7 @@ data = b''
 total = 0
 ack_count = 0
 
+# print(f"{ack_count}{ackOffset}")
 while True:
     # read file chunk by chunk : chunk == fragmentation size 
     chunk = file.read(fragmentOffset) 
@@ -331,9 +336,11 @@ while True:
     buffer = buffer + chunk 
 
     send_data(chunk,dest_ip_address) # send file data to receiver 
+    # print(f"{total} / {expectedNumberOfPacket} ")
+    # print(f"{ack_count} - {ackOffset}")
     ack_count = ack_count + 1 # count for ack sent packets
-    total_sent = total + 1 # count for total sent packet
-    time.sleep(delay) # set a delay for protect packet lost on wire
+    total = total + 1 # count for total sent packet
+    # time.sleep(delay) # set a delay for protect packet lost on wire
     
     if ack_count == ackOffset:
         try:  # check for ack offset 
@@ -343,6 +350,7 @@ while True:
                 if struct.unpack("!Q",ack_data.prox.data)[0] == total: # compare number of sent packets and arrived 
                     # print("compare success")
                     buffer = b""
+                    ack_count = 0
                 else: 
                     #!! handle not-equal of packet count
                     print(Fore.RED+"error detected in packet transferring. exit ")
@@ -371,19 +379,19 @@ while True:
     #     except socket.timeout:
     #         print(f"error detected \n try resume....")
     #         continue    
+req_ack(dest_ip_address)
+packet = pack()
+if packet.packet_type == "ack-data":
+    packet_no = struct.unpack("!Q",packet.prox.data)[0]
+    if packet_no == total: 
+        print("done")
+
+
+
+
 # req_ack(dest_ip_address)
-# packet = pack()
-# if packet.packet_type == "ack-data":
-#     packet_no = struct.unpack("!Q",packet.prox.data)[0]
-#     if packet_no == total: 
-#         print("done")
-
-
-
-
-    
 end(dest_ip_address)
-print("end")
+print(f"{(fileSize/1024)/1024} MB file transferred successfully")
 
 print("{} packet sent".format(total))
 

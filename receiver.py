@@ -9,7 +9,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
 protocol_id = 234
 ip_address = "192.168.0.13"
 dest_ip_address = "192.168.0.17"
-ip_address = "172.16.0.128"
+ip_address = "172.16.0.129"
 dest_ip_address = "172.16.0.1"
 mtu = 1500
 fragmentOffset = mtu - 20 - 8 - 14 # MTU - IP header length - PROX header length
@@ -115,7 +115,9 @@ def pack() :
         if IP_packet.destination_address != ip_address or IP_packet.protocol != 255:
             continue
         prox = PROX_parse(packet[20:])
-
+        if check_signature(packet):
+            print("fail signature")
+            exit(1)
         if prox.flag == 255 :
             packet_type = "start"
         elif prox.flag == 85 : 
