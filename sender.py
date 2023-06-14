@@ -344,6 +344,7 @@ while True:
                     # print("compare success")
                     buffer = b""
                 else: 
+                    #!! handle not-equal of packet count
                     print(Fore.RED+"error detected in packet transferring. exit ")
                     exit(1)
         except socket.timeout:
