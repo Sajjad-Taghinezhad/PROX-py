@@ -123,7 +123,6 @@ def check_signature(packet) -> bool:
     return False
 
 # Listen for packet and analyze
-#! need implement signature check, error handling, 
 def pack() :
     while True:
         packet, address = sock.recvfrom(65535)
@@ -340,7 +339,7 @@ while True:
     # print(f"{ack_count} - {ackOffset}")
     ack_count = ack_count + 1 # count for ack sent packets
     total = total + 1 # count for total sent packet
-    # time.sleep(delay) # set a delay for protect packet lost on wire
+    time.sleep(delay) # set a delay for protect packet lost on wire
     
     if ack_count == ackOffset:
         try:  # check for ack offset 
@@ -352,7 +351,7 @@ while True:
                     buffer = b""
                     ack_count = 0
                 else: 
-                    #!! handle not-equal of packet count
+                    #!! handle not-equal of packet count : reset connection
                     print(Fore.RED+"error detected in packet transferring. exit ")
                     exit(1)
         except socket.timeout:
@@ -360,25 +359,7 @@ while True:
             exit(1)
             #!! handle timeout of ack-data
 
-
-
-    # if g == ackOffset: 
-    #     # print("{} / {}".format(g,ackOffset))
-    #     req_ack(dest_ip_address)
-    #     try:
-    #         packet = pack()
-    #         if packet.packet_type == "ack-data": 
-    #             packet_no = struct.unpack("!Q",packet.prox.data)[0]
-    #             if packet_no == total:
-    #                 g = 0
-    #                 print("{} / {}". format(packet_no,total))
-    #                 continue
-    #             else:
-    #                 print("packet count not matched!\ntrying to restore..")
-                    
-    #     except socket.timeout:
-    #         print(f"error detected \n try resume....")
-    #         continue    
+# Send last req-ack to save data on receiver side and check for transferred successfully
 req_ack(dest_ip_address)
 packet = pack()
 if packet.packet_type == "ack-data":
@@ -386,41 +367,12 @@ if packet.packet_type == "ack-data":
     if packet_no == total: 
         print("done")
 
-
-
-
-# req_ack(dest_ip_address)
+# Send end packet to end connection
 end(dest_ip_address)
-print(f"{(fileSize/1024)/1024} MB file transferred successfully")
+# Show some message
+print(Fore.CYAN+f"{(fileSize/1024)/1024} MB {Fore.GREEN}file transferred successfully"+Fore.RESET)
+print(Fore.BLUE+f"{total} packet sent"+Fore.RESET)
 
-print("{} packet sent".format(total))
-
-
-
-
-
-
-
-
-
-            # print(total)
-            # for attempt in range(3):
-            #     try:
-            #         req_ack(dest_ip_address)
-            #         print("get-ack sent")
-            #         sock.settimeout(1)
-            #         packet = pack()
-            #         if packet.packet_type == "ack-data" : 
-            #             packet_no = struct.unpack("!Q",packet.prox.data)
-            #             print(packet_no)
-            #     except socket.timeout:
-            #         print(f"Attempt {attempt+1}/{max_attempts} timed out, retrying...")
-            #         continue  
-
-            # req_ack(dest_ip_address)
-            # packet = pack()
-            # if packet.packet_type == "ack" : 
-            #     continue
 
 
 
