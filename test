@@ -1,0 +1,23 @@
+import struct
+data = b"0100"
+
+
+
+
+
+print(len(data))
+print(data)
+
+data = 
+data = data << 4
+dd = struct.pack("!B",data)
+
+
+print(len(dd))
+print(dd)
+
+tt = struct.unpack("!B",dd)
+
+print(tt)
+
+print(int("01000101",2))

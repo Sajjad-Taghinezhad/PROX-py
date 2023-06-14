@@ -1,0 +1,74 @@
+length = 1 GB = 1024 MB = 1048576 KB = 1073741824 Bytes
+
+max data length = 8180
+ 
+number of packets = length / max data length # =  1073741824 / 8180 = 131264.2816 = ~ 1312265
+
+ 
+ack step = number of packets / max data length # =  131264 / 8180 = 16.046  = ~17 
+
+flag = 
+
+flags[start - upload - datatype: info] 
+    data : 
+        lenght = 
+        
+        
+        
+        
+        
+flags : 
+        
+| state + action + datatype
+|-------|--------|------------
+| start | upload
+| fin   |       
+             
+             
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+start : 
+
+    flags = [ start upload info reserve ] # size = 8 bits  = 1 byte
+    data = file_length + ack step + filename 
+-------------------------------------------------------------
+response : 
+    flags = [ start ack nothing reserver ] # size = 8 bits  = 1 byte
+    data = 
+    
+
+===============================================================================
+
+sending data : 
+    flags = [ inprogress upload data reserve ] # size = 8 bits  = 1 byte
+    data = filedata[8180 bytes]
+    .
+    .
+16 packets # clculate based on file size 
+    .
+    .
+-------------------------------------------------------------
+response : 
+    nothing 
+    
+===============================================================================
+
+get ack : 
+    flags = [ inprogress get_ack nothing reserve ] # size = 8 bits  = 1 byte
+    data = 
+-------------------------------------------------------------
+response : 
+    flags = [ inprogress ack info reserve ] # size = 8 bits  = 1 byte
+    data = number of packet received successfully 
+
+  
+===============================================================================
+ 
+last packet of data : 
+    flags = [ fin get_ack info reserve ] # size = 8 bits  = 1 byte
+    data = file checksum (md5)
+-------------------------------------------------------------
+response : 
+    flags = [ fin ack nothing success ] # size = 8 bits  = 1 byte
+    data = 
