@@ -325,7 +325,7 @@ while True:
     # read file chunk by chunk : chunk == fragmentation size 
     chunk = file.read(fragmentOffset) 
     if not chunk:
-        break # check for end of file 
+        break # break in end of file 
     
     # implement buffer to save the cycle of sending packets
     buffer = buffer + chunk 
